@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp(debugShowCheckedModeBanner: false,
       title: 'g→cc変換',
       theme: ThemeData(
         colorScheme: const ColorScheme(
