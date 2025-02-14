@@ -1,0 +1,109 @@
+import 'package:flutter/material.dart';
+import '../database/database_helper.dart';
+import '../models/article.dart';  // Articleモデルのインポート
+import 'newbook.dart';  // 詳細画面のインポート
+
+class Book extends StatelessWidget {
+  const Book({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return
+      FutureBuilder<List<Article>>(
+      future: _getArticles(), // データベースから記事を取得
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('エラーが発生しました'));
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('記事はありません'));
+        }
+
+        List<Article> articles = snapshot.data!;
+
+        return ListView.separated(
+          itemCount: articles.length,
+          separatorBuilder: (context, index) => const Divider(
+            thickness: 1,
+            color: Colors.grey,
+            indent: 16,
+            endIndent: 16,
+          ),
+          itemBuilder: (context, index) {
+            final article = articles[index];
+            return Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _pushPage(context, article),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 画像部分（サンプル画像を表示）
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: Image.asset(
+                          article.thumbnail,  // サンプル画像
+                          height: 120,
+                          width: 120,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // タイトル
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              article.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              article.contents, // 内容の一部を表示
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios, size: 20),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<List<Article>> _getArticles() async {
+    // データベースから記事を取得する関数
+    return await DatabaseHelper().getArticles();
+  }
+
+  void _pushPage(BuildContext context, Article article) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NewBook(article: article), // 詳細画面に記事を渡す
+      ),
+    );
+  }
+}
