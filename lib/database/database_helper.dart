@@ -20,7 +20,7 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, 'my_database.db');
-    await deleteDatabase(path);//実装時に削除
+    // await deleteDatabase(path);//実装時に削除
     return await openDatabase(path, version: 1, onCreate: _onCreate);
   }
 

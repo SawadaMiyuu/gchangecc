@@ -227,6 +227,10 @@ class _MeasureState extends State<Measure> {
                       FilteringTextInputFormatter.digitsOnly, // 数字のみ入力許可
                     ],
                     onChanged: (value) => _convertGramsToCc(),
+                    onEditingComplete: () {
+                    // 編集が完了したときにキーボードを閉じる
+                    FocusScope.of(context).unfocus();
+                  },
                   ),
                 ),
               ),
@@ -265,7 +269,10 @@ class _MeasureState extends State<Measure> {
                   padding: EdgeInsets.zero,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
                 ),
-                onPressed: _addHistory,
+                onPressed: () {
+                  FocusScope.of(context).unfocus();  // キーボードを閉じる
+                  _addHistory();  // 履歴に追加する処理
+                },
                 child: const Padding(
                   padding: EdgeInsets.only(left: 15, bottom: 5),
                   child: Align(
