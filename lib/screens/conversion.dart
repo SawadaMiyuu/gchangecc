@@ -180,7 +180,11 @@ class _MeasureState extends State<Measure> {
               items: items.map((item) {
                 return DropdownMenuItem<Item>(
                   value: item,
-                  child: Text(item.name),
+                  child: Center(
+                    child: Text(item.name,
+                        style: TextStyle(fontSize: 18,
+                        fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.onPrimary),),
+                  ),
                 );
               }).toList(),
               onChanged: (Item? value) {
@@ -190,7 +194,15 @@ class _MeasureState extends State<Measure> {
                 });
               },
               value: isSelectedItem,
-              hint: const Text("選択してください"),
+              hint: Text("選択してください",
+                  style: TextStyle(fontSize: 18,
+                  fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.primary),
+              ),
+              icon: Icon(
+                Icons.arrow_drop_down,  // ドロップダウンのアイコン
+                color: Theme.of(context).colorScheme.primary,    // アイコンの色を変更
+                size: 30,               // アイコンの大きさを調整（お好みで）
+              ),
             ),
           ),
 
@@ -219,7 +231,7 @@ class _MeasureState extends State<Measure> {
                 ),
               ),
               const Padding(padding: EdgeInsets.only(right: 20), child: Text("g")),
-              const Icon(Icons.fast_forward_rounded),
+              Icon(Icons.fast_forward_rounded,color: Theme.of(context).colorScheme.onPrimary,size: 30,),
               const SizedBox(width: 20),
               Flexible(
                 child: Text(
@@ -275,7 +287,7 @@ class _MeasureState extends State<Measure> {
                 fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.onPrimary)),
               Text(
                 "(${_historyList.length}件)", // 🔹 履歴の件数を表示
-                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                style: TextStyle(fontSize: 16, color: Colors.brown[300]),
               ),
             ],
           ),
@@ -283,11 +295,11 @@ class _MeasureState extends State<Measure> {
             height: 300,
             width: 360,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.black),
+              border: Border.all(color: Theme.of(context).colorScheme.onPrimary),
               borderRadius: BorderRadius.circular(20),
             ),
             child: _historyList.isEmpty
-                ? const Center(child: Text("履歴なし"))
+                ? Center(child: Text("履歴なし",style: TextStyle(fontSize: 16,color: Theme.of(context).colorScheme.onSecondary)))
                 : ListView.builder(
               itemCount: _historyList.length,
               itemBuilder: (context, index) {
@@ -329,9 +341,6 @@ class _MeasureState extends State<Measure> {
                             ),
                           ),
                         ),
-
-
-
                         // ゴミ箱アイコンを右側に配置
                         IconButton(
                           icon: Icon(Icons.delete,color: Color(0xFFFF8A80),),
@@ -340,7 +349,7 @@ class _MeasureState extends State<Measure> {
                         const SizedBox(width: 5),
                       ],
                     ),
-                    const Divider(color: Colors.grey),
+                    Divider(color: Theme.of(context).colorScheme.onSecondary),
                   ],
                 );
               },

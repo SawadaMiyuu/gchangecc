@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart'; // 追加
 import '../models/kiji.dart';
 import '../database/database_helper.dart';
 import '../screens/editbook.dart';
@@ -50,19 +51,22 @@ class _DetailBookState extends State<DetailBook> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_kiji!.title,
+        title: Text(
+          _kiji!.title,
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: Colors.brown,
-          ),),
+          ),
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.edit, color: Color(0xFFF57F17)),
             onPressed: () => _editKiji(context),
           ),
           IconButton(
-            icon: Icon(Icons.delete, color: Theme.of(context).colorScheme.onSurface),
+            icon: Icon(Icons.delete,
+                color: Theme.of(context).colorScheme.onSurface),
             onPressed: () => _deleteKiji(context),
           ),
         ],
@@ -74,10 +78,15 @@ class _DetailBookState extends State<DetailBook> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 記事の画像（サムネイル）
-              if (_kiji!.thumbnail.isNotEmpty)
-                _kiji!.thumbnail.startsWith('/data/user')  // ファイルパスか判定
-                    ? Image.file(File(_kiji!.thumbnail))  // ファイルとして表示
-                    : Image.asset(_kiji!.thumbnail),  // アセットならImage.assetを使う
+              Center(
+                child: _kiji!.thumbnail.isNotEmpty
+                    ? (_kiji!.thumbnail.startsWith('/data/user') // ファイルパスか判定
+                        ? Image.file(File(_kiji!.thumbnail),
+                            height: 250) // ファイルとして表示
+                        : Image.asset(_kiji!.thumbnail,
+                            height: 250)) // アセットならImage.assetを使う
+                    : SizedBox(), // 空の場合は何も表示しない
+              ),
 
               // タイトル
               Text(
@@ -91,12 +100,32 @@ class _DetailBookState extends State<DetailBook> {
               const SizedBox(height: 16),
 
               // 記事の内容（Markdown形式で表示）
-              Text(
-                _kiji!.contents,
-                style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.brown),
-              ),
+              MarkdownBody(
+                data: _kiji!.contents,
+                styleSheet: MarkdownStyleSheet(
+                  p: TextStyle(fontSize: 16, color: Colors.brown),
+                  // 通常のテキスト
+                  strong: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown),
+                  // **太字**
+                  em: TextStyle(
+                      fontSize: 16,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.brown[800]),
+                  // *斜体*
+                  h1: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown),
+                  // # 見出し1
+                  h2: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown), // ## 見出し2
+                ),
+              )
             ],
           ),
         ),
@@ -120,7 +149,6 @@ class _DetailBookState extends State<DetailBook> {
     }
   }
 
-
   void _deleteKiji(BuildContext context) {
     showDialog(
       context: context,
@@ -140,7 +168,11 @@ class _DetailBookState extends State<DetailBook> {
                 Navigator.pop(context); // ダイアログを閉じる
                 Navigator.pop(context); // 詳細画面を閉じる
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('記事を削除しました')),
+                  SnackBar(
+                    content: Text('記事を削除しました'),
+                    backgroundColor:
+                        Theme.of(context).colorScheme.primaryContainer,
+                  ),
                 );
               } catch (e) {
                 debugPrint('記事の削除に失敗しました: $e');

@@ -90,17 +90,15 @@ class DatabaseHelper {
 
     // `kijis` テーブルに初期データを挿入
     await db.insert('kijis', {'title': '大さじ15cc、小さじ5cc', 'contents': '大さじ15cc,中間10cc,小さじ5cc', 'thumbnail': 'assets/butter.png'});
-    await db.insert('kijis', {'title': '少々:３本、一つまみ:２本', 'contents': '少々:親指、人差し指、中指でつまんだ量。'
-        '一つまみ：親指と人差し指でつまんだ量', 'thumbnail': 'assets/butter.png'});
-    await db.insert('kijis', {'title': '１カップ=200cc', 'contents': '液体の1カップは200CC'
-        'お米の１カップは180cc', 'thumbnail': 'assets/butter.png'});
-    await db.insert('kijis', {'title': '小麦粉は薄力粉', 'contents': 'レシピに小麦粉を使用。と書いてあったらそれは薄力粉！'
-        '厳密にいえば小麦粉と薄力粉は別物だけど、あんまり気にしなくていい。'
-        '薄力粉：フライ、天ぷらの打ち粉、天ぷらの衣、たこ焼き、お好み焼き'
-        '中力粉：うどんなどの麺類'
-        '強力粉：パンやピザの生地'
-        ''
-        'サクサク感、ふんわり感を出すのは薄力粉'
+    await db.insert('kijis', {'title': '少々:３本、一つまみ:２本', 'contents': '少々:親指、人差し指、中指でつまんだ量。\n一つまみ：親指と人差し指でつまんだ量', 'thumbnail': 'assets/butter.png'});
+    await db.insert('kijis', {'title': '１カップ=200cc', 'contents': '液体の1カップは200CC\nお米の１カップは180cc', 'thumbnail': 'assets/butter.png'});
+    await db.insert('kijis', {'title': '小麦粉は薄力粉', 'contents': 'レシピに小麦粉を使用。と書いてあったらそれは薄力粉！\n'
+        '厳密にいえば小麦粉と薄力粉は別物だけど、あんまり気にしなくていい。\n\n'
+        '薄力粉：フライ、天ぷらの打ち粉、天ぷらの衣、たこ焼き、お好み焼き\n'
+        '中力粉：うどんなどの麺類\n'
+        '強力粉：パンやピザの生地\n'
+        '\n'
+        'サクサク感、ふんわり感を出すのは薄力粉\n'
         'もちもち間を出すのは中力粉、強力粉', 'thumbnail': 'assets/butter.png'});
   }
 
