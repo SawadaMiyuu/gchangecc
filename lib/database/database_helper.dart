@@ -101,7 +101,7 @@ class DatabaseHelper {
         '強力粉：パンやピザの生地'
         ''
         'サクサク感、ふんわり感を出すのは薄力粉'
-        'もちもち間を出すのは中力粉、強力粉', 'thumbnail': ''});
+        'もちもち間を出すのは中力粉、強力粉', 'thumbnail': 'assets/butter.png'});
   }
 
   //Item
