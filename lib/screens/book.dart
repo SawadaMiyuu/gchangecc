@@ -8,27 +8,21 @@ class Book extends StatefulWidget {
   const Book({super.key});
 
   @override
-  _BookState createState() => _BookState();
+  BookState createState() => BookState();
 }
 
-class _BookState extends State<Book> {
+class BookState extends State<Book> {
   List<Kiji> _kijis = [];
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _fetchKijis(); // 画面が戻るたびにデータを更新
-  }
-
-  @override
   void initState() {
     super.initState();
-    _fetchKijis(); // 初回データ取得
+    fetchKijis(); // 初回データ取得
   }
 
   // データベースから記事リストを取得
-  void _fetchKijis() async {
+  void fetchKijis() async {
     List<Kiji> kijis = await _dbHelper.getKijis();
     if (mounted) {
       setState(() {
@@ -118,7 +112,7 @@ class _BookState extends State<Book> {
     );
 
     // 戻ってきたらデータを更新
-    _fetchKijis();
+    fetchKijis();
   }
 
 }

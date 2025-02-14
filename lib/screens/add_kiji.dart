@@ -13,6 +13,7 @@ class _AddKijiScreenState extends State<AddKijiScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   File? _imageFile; // 選択された画像
+  ScrollController _scrollController = ScrollController(); //初期化時に直接設定
 
   // 画像を選択する関数
   Future<void> _pickImage() async {
@@ -37,6 +38,12 @@ class _AddKijiScreenState extends State<AddKijiScreen> {
 
       await DatabaseHelper().insertKiji(newKiji);
 
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('記事を追加しました'),
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        ),
+      );
       // デバッグ用: 保存した記事のIDを確認
       print("保存した記事のID: ${newKiji.id}");// データベースから最新記事を取得して確認
       var savedKijis = await DatabaseHelper().getKijis();
@@ -53,13 +60,19 @@ class _AddKijiScreenState extends State<AddKijiScreen> {
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
+    _scrollController.dispose(); // ScrollControllerを破棄
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('記事の追加')),
+      appBar: AppBar(title: const Text('記事の追加',
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: Colors.brown,
+        ),)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -69,12 +82,33 @@ class _AddKijiScreenState extends State<AddKijiScreen> {
               TextField(
                 controller: _titleController,
                 decoration: const InputDecoration(labelText: 'タイトル'),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
               ),
-              TextFormField(
-                controller: _contentController,
-                decoration: const InputDecoration(labelText: '内容'),
-                maxLines: 10,
-                keyboardType: TextInputType.multiline,
+              ScrollbarTheme(
+                data: ScrollbarThemeData(
+                  thumbColor: WidgetStateProperty.all(Colors.brown[300]),// スクロールバーの色
+                  trackColor: WidgetStateProperty.all(Colors.brown[100]),// 背景色
+                  thickness: WidgetStateProperty.all(7.0),// スクロールバーの太さ
+                ),
+                child: Scrollbar(
+                  controller: _scrollController, // ScrollControllerを指定
+                  thumbVisibility: true, // スクロールバーを常に表示
+                  trackVisibility: true, // 背景を表示
+                  radius: const Radius.circular(10.0), // バーの角を丸く
+                  child: TextField(
+                    controller: _contentController,
+                    decoration: const InputDecoration(labelText: '内容'),
+                    maxLines: 10,
+                    keyboardType: TextInputType.multiline,
+                    style: TextStyle(
+                      color: Colors.brown,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
 
@@ -86,13 +120,25 @@ class _AddKijiScreenState extends State<AddKijiScreen> {
               const SizedBox(height: 10),
               ElevatedButton.icon(
                 onPressed: _pickImage,
-                icon: const Icon(Icons.image),
-                label: const Text('画像を選択'),
+                icon: Icon(
+                  Icons.image,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+                label: Text(
+                  '画像を選択',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
               ),
 
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _saveKiji,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.brown[300], // 背景色をオレンジに設定
+                  foregroundColor: Colors.white, // テキストの色を白に設定
+                ),
                 child: const Text('記事を保存'),
               ),
             ],

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_markdown/flutter_markdown.dart'; // 追加
 import '../models/kiji.dart';
 import '../database/database_helper.dart';
 import '../screens/editbook.dart';
@@ -17,6 +16,7 @@ class DetailBook extends StatefulWidget {
 class _DetailBookState extends State<DetailBook> {
   Kiji? _kiji; // 記事のデータ
   final DatabaseHelper _dbHelper = DatabaseHelper();
+  final ScrollController _scrollController = ScrollController(); // ScrollControllerを追加
 
   @override
   void initState() {
@@ -73,60 +73,51 @@ class _DetailBookState extends State<DetailBook> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 記事の画像（サムネイル）
-              Center(
-                child: _kiji!.thumbnail.isNotEmpty
-                    ? (_kiji!.thumbnail.startsWith('/data/user') // ファイルパスか判定
+        child: ScrollbarTheme(
+          data: ScrollbarThemeData(
+            thumbColor: WidgetStateProperty.all(Colors.brown[300]), // スクロールバーの色
+            trackColor: WidgetStateProperty.all(Colors.brown[100]), // 背景色
+            thickness: WidgetStateProperty.all(7.0), // スクロールバーの太さ
+          ),
+          child: Scrollbar(
+            controller: _scrollController, // ScrollControllerを指定
+            thumbVisibility: true, // スクロールバーを常に表示
+            trackVisibility: true, // 背景を表示
+            radius: const Radius.circular(10.0), // バーの角を丸く
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 記事の画像（サムネイル）
+                  Center(
+                    child: _kiji!.thumbnail.isNotEmpty
+                        ? (_kiji!.thumbnail.startsWith('/data/user') // ファイルパスか判定
                         ? Image.file(File(_kiji!.thumbnail),
-                            height: 250) // ファイルとして表示
+                        height: 250) // ファイルとして表示
                         : Image.asset(_kiji!.thumbnail,
-                            height: 250)) // アセットならImage.assetを使う
-                    : SizedBox(), // 空の場合は何も表示しない
-              ),
+                        height: 250)) // アセットならImage.assetを使う
+                        : SizedBox(), // 空の場合は何も表示しない
+                  ),
 
-              // タイトル
-              Text(
-                _kiji!.title,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onPrimary,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // 記事の内容（Markdown形式で表示）
-              MarkdownBody(
-                data: _kiji!.contents,
-                styleSheet: MarkdownStyleSheet(
-                  p: TextStyle(fontSize: 16, color: Colors.brown),
-                  // 通常のテキスト
-                  strong: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.brown),
-                  // **太字**
-                  em: TextStyle(
-                      fontSize: 16,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.brown[800]),
-                  // *斜体*
-                  h1: TextStyle(
+                  // タイトル
+                  Text(
+                    _kiji!.title,
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.brown),
-                  // # 見出し1
-                  h2: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.brown), // ## 見出し2
-                ),
-              )
-            ],
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _kiji!.contents,
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.brown),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -171,7 +162,7 @@ class _DetailBookState extends State<DetailBook> {
                   SnackBar(
                     content: Text('記事を削除しました'),
                     backgroundColor:
-                        Theme.of(context).colorScheme.primaryContainer,
+                    Theme.of(context).colorScheme.primaryContainer,
                   ),
                 );
               } catch (e) {

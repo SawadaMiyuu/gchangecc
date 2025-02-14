@@ -72,38 +72,38 @@ class _MeasureState extends State<Measure> {
   // 履歴をデータベースに追加または更新
   void _addHistory() async {
     if (_convertedValue == null || isSelectedItem == null) return;
-      int gValue = int.tryParse(_gramController.text) ?? 0;
+    int gValue = int.tryParse(_gramController.text) ?? 0;
 
-      // すでに同じアイテム名 + g の履歴があるかチェック
-      History? existingHistory;
-      try {
-        existingHistory = _historyList.firstWhere(
-              (history) => history.name == isSelectedItem!.name && history.g == gValue,
-        );
-      } catch (e) {
-        existingHistory = null;
-      }
+    // すでに同じアイテム名 + g の履歴があるかチェック
+    History? existingHistory;
+    try {
+      existingHistory = _historyList.firstWhere(
+            (history) => history.name == isSelectedItem!.name && history.g == gValue,
+      );
+    } catch (e) {
+      existingHistory = null;
+    }
 
-      if (existingHistory != null) {
-        // 既存の履歴がある場合は `createdAt` を更新
-        final updatedHistory = History(
-          id: existingHistory.id, // ID を保持
-          name: existingHistory.name,
-          g: existingHistory.g,
-          cc: existingHistory.cc,
-          createdAt: DateTime.now().toString(), // 更新
-        );
-        await DatabaseHelper().updateHistory(updatedHistory);
-      } else {
-        // ない場合は新規追加
-        final newHistory = History(
-          name: isSelectedItem!.name,
-          g: gValue,
-          cc: _convertedValue!.toInt(),
-          createdAt: DateTime.now().toString(),
-        );
-        await DatabaseHelper().insertHistory(newHistory);
-      }
+    if (existingHistory != null) {
+      // 既存の履歴がある場合は `createdAt` を更新
+      final updatedHistory = History(
+        id: existingHistory.id, // ID を保持
+        name: existingHistory.name,
+        g: existingHistory.g,
+        cc: existingHistory.cc,
+        createdAt: DateTime.now().toString(), // 更新
+      );
+      await DatabaseHelper().updateHistory(updatedHistory);
+    } else {
+      // ない場合は新規追加
+      final newHistory = History(
+        name: isSelectedItem!.name,
+        g: gValue,
+        cc: _convertedValue!.toInt(),
+        createdAt: DateTime.now().toString(),
+      );
+      await DatabaseHelper().insertHistory(newHistory);
+    }
 
 // 🔹 履歴の件数をチェックし、30 件を超えたら古い履歴を削除
     List<History> allHistory = await _dbHelper.getHistory();
@@ -114,7 +114,7 @@ class _MeasureState extends State<Measure> {
       if (oldestId != null) {
         await _dbHelper.deleteHistory(oldestId);
       }}
-      _fetchHistory(); // 履歴を更新
+    _fetchHistory(); // 履歴を更新
   }
 
 
@@ -170,200 +170,206 @@ class _MeasureState extends State<Measure> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: <Widget>[
-          const SizedBox(height: 30),
-          // 🟡 セレクトボックス
-          Center(
-            child: DropdownButton<Item>(
-              items: items.map((item) {
-                return DropdownMenuItem<Item>(
-                  value: item,
-                  child: Center(
-                    child: Text(item.name,
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque, // 画面全体のタップを検知
+      onTap: () {
+        FocusScope.of(context).unfocus(); // キーボードを閉じる
+      },
+      child: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            const SizedBox(height: 30),
+            // 🟡 セレクトボックス
+            Center(
+              child: DropdownButton<Item>(
+                items: items.map((item) {
+                  return DropdownMenuItem<Item>(
+                    value: item,
+                    child: Center(
+                      child: Text(item.name,
                         style: TextStyle(fontSize: 18,
-                        fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.onPrimary),),
-                  ),
-                );
-              }).toList(),
-              onChanged: (Item? value) {
-                setState(() {
-                  isSelectedItem = value;
-                  _convertGramsToCc();
-                });
-              },
-              value: isSelectedItem,
-              hint: Text("選択してください",
-                  style: TextStyle(fontSize: 18,
-                  fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.primary),
-              ),
-              icon: Icon(
-                Icons.arrow_drop_down,  // ドロップダウンのアイコン
-                color: Theme.of(context).colorScheme.primary,    // アイコンの色を変更
-                size: 30,               // アイコンの大きさを調整（お好みで）
-              ),
-            ),
-          ),
-
-          // 🟡 変換
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              // 🟢 テキストフィールド
-              SizedBox(
-                width: 100,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                  child: TextField(
-                    controller: _gramController,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'グラム',
+                            fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.onPrimary),),
                     ),
-                    keyboardType: TextInputType.number,
-                    maxLength: 10, // 最大5文字まで
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly, // 数字のみ入力許可
-                    ],
-                    onChanged: (value) => _convertGramsToCc(),
-                    onEditingComplete: () {
-                    // 編集が完了したときにキーボードを閉じる
-                    FocusScope.of(context).unfocus();
-                  },
-                  ),
-                ),
-              ),
-              const Padding(padding: EdgeInsets.only(right: 20), child: Text("g")),
-              Icon(Icons.fast_forward_rounded,color: Theme.of(context).colorScheme.onPrimary,size: 30,),
-              const SizedBox(width: 20),
-              Flexible(
-                child: Text(
-                  _convertedValue != null ? _convertedValue!.toStringAsFixed(2) : '',
-                  style: const TextStyle(
-                    color: Color(0xFFFF795548),
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline,
-                    decorationStyle: TextDecorationStyle.dashed,
-                    decorationThickness: 2.0,
-                    decorationColor: Colors.amber,
-                  ),
-                  overflow: TextOverflow.ellipsis, // はみ出す場合は省略
-                ),
-              ),
-              const Text("cc"),
-            ],
-          ),
-
-          // 🟡 履歴に追加ボタン
-          Container(
-            width: 100,
-            height: 40,
-            child: ClipPath(
-              clipper: TriangleClipper(),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.onPrimary, // ボタンの色
-                  foregroundColor: Theme.of(context).colorScheme.onSurface, // 文字の色
-                  padding: EdgeInsets.zero,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-                ),
-                onPressed: () {
-                  FocusScope.of(context).unfocus();  // キーボードを閉じる
-                  _addHistory();  // 履歴に追加する処理
+                  );
+                }).toList(),
+                onChanged: (Item? value) {
+                  setState(() {
+                    isSelectedItem = value;
+                    _convertGramsToCc();
+                  });
                 },
-                child: const Padding(
-                  padding: EdgeInsets.only(left: 15, bottom: 5),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('履歴に残す'),
+                value: isSelectedItem,
+                hint: Text("選択してください",
+                  style: TextStyle(fontSize: 18,
+                      fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.primary),
+                ),
+                icon: Icon(
+                  Icons.arrow_drop_down,  // ドロップダウンのアイコン
+                  color: Theme.of(context).colorScheme.primary,    // アイコンの色を変更
+                  size: 30,               // アイコンの大きさを調整（お好みで）
+                ),
+              ),
+            ),
+
+            // 🟡 変換
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                // 🟢 テキストフィールド
+                SizedBox(
+                  width: 100,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                    child: TextField(
+                      controller: _gramController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'グラム',
+                      ),
+                      keyboardType: TextInputType.number,
+                      maxLength: 10, // 最大5文字まで
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly, // 数字のみ入力許可
+                      ],
+                      onChanged: (value) => _convertGramsToCc(),
+                      onEditingComplete: () {
+                        // 編集が完了したときにキーボードを閉じる
+                        FocusScope.of(context).unfocus();
+                      },
+                    ),
+                  ),
+                ),
+                const Padding(padding: EdgeInsets.only(right: 20), child: Text("g")),
+                Icon(Icons.fast_forward_rounded,color: Theme.of(context).colorScheme.onPrimary,size: 30,),
+                const SizedBox(width: 20),
+                Flexible(
+                  child: Text(
+                    _convertedValue != null ? _convertedValue!.toStringAsFixed(2) : '',
+                    style: const TextStyle(
+                      color: Color(0xFFFF795548),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                      decorationStyle: TextDecorationStyle.dashed,
+                      decorationThickness: 2.0,
+                      decorationColor: Colors.amber,
+                    ),
+                    overflow: TextOverflow.ellipsis, // はみ出す場合は省略
+                  ),
+                ),
+                const Text("cc"),
+              ],
+            ),
+
+            // 🟡 履歴に追加ボタン
+            Container(
+              width: 100,
+              height: 40,
+              child: ClipPath(
+                clipper: TriangleClipper(),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.onPrimary, // ボタンの色
+                    foregroundColor: Theme.of(context).colorScheme.onSurface, // 文字の色
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+                  ),
+                  onPressed: () {
+                    FocusScope.of(context).unfocus();  // キーボードを閉じる
+                    _addHistory();  // 履歴に追加する処理
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.only(left: 15, bottom: 5),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text('履歴に残す'),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          const SizedBox(height: 25),
+            const SizedBox(height: 25),
 
-          // 🟡 履歴セクション
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("履歴",style: TextStyle(fontSize: 18,
-                fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.onPrimary)),
-              Text(
-                "(${_historyList.length}件)", // 🔹 履歴の件数を表示
-                style: TextStyle(fontSize: 16, color: Colors.brown[300]),
-              ),
-            ],
-          ),
-          Container(
-            height: 300,
-            width: 360,
-            decoration: BoxDecoration(
-              border: Border.all(color: Theme.of(context).colorScheme.onPrimary),
-              borderRadius: BorderRadius.circular(20),
+            // 🟡 履歴セクション
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("履歴",style: TextStyle(fontSize: 18,
+                    fontWeight: FontWeight.bold,color: Theme.of(context).colorScheme.onPrimary)),
+                Text(
+                  "(${_historyList.length}件)", // 🔹 履歴の件数を表示
+                  style: TextStyle(fontSize: 16, color: Colors.brown[300]),
+                ),
+              ],
             ),
-            child: _historyList.isEmpty
-                ? Center(child: Text("履歴なし",style: TextStyle(fontSize: 16,color: Theme.of(context).colorScheme.onSecondary)))
-                : ListView.builder(
-              itemCount: _historyList.length,
-              itemBuilder: (context, index) {
-                final history = _historyList[index];
-                return Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround, // 左右に配置
-                      children: [
-                        const SizedBox(width: 5),
-                        // 星アイコンを左側に配置
-                        IconButton(
-                          icon: Icon(
-                            Icons.star,
-                            color: _favoriteSet.contains(history.id)
-                                ? Color(0xFF8D6E63) // 登録
-                                : Theme.of(context).colorScheme.onSecondary, // 外れてる
+            Container(
+              height: 300,
+              width: 360,
+              decoration: BoxDecoration(
+                border: Border.all(color: Theme.of(context).colorScheme.onPrimary),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: _historyList.isEmpty
+                  ? Center(child: Text("履歴なし",style: TextStyle(fontSize: 16,color: Theme.of(context).colorScheme.onSecondary)))
+                  : ListView.builder(
+                itemCount: _historyList.length,
+                itemBuilder: (context, index) {
+                  final history = _historyList[index];
+                  return Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround, // 左右に配置
+                        children: [
+                          const SizedBox(width: 5),
+                          // 星アイコンを左側に配置
+                          IconButton(
+                            icon: Icon(
+                              Icons.star,
+                              color: _favoriteSet.contains(history.id)
+                                  ? Color(0xFF8D6E63) // 登録
+                                  : Theme.of(context).colorScheme.onSecondary, // 外れてる
+                            ),
+                            onPressed: () => _toggleFavorite(history),
                           ),
-                          onPressed: () => _toggleFavorite(history),
-                        ),
-                        // 名前とグラム
+                          // 名前とグラム
 
-                        SizedBox(
-                          width: 250,
-                          height: 50,
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                Text("${history.name} "),
-                                const SizedBox(width: 5),
-                                Text("${history.g}g"),
-                                Icon(
-                                  Icons.fast_forward_rounded,
-                                  color: Theme.of(context).colorScheme.onPrimary,
-                                ),
-                                Text("${history.cc}cc"),
-                              ],
+                          SizedBox(
+                            width: 250,
+                            height: 50,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  Text("${history.name} "),
+                                  const SizedBox(width: 5),
+                                  Text("${history.g}g"),
+                                  Icon(
+                                    Icons.fast_forward_rounded,
+                                    color: Theme.of(context).colorScheme.onPrimary,
+                                  ),
+                                  Text("${history.cc}cc"),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        // ゴミ箱アイコンを右側に配置
-                        IconButton(
-                          icon: Icon(Icons.delete,color: Color(0xFFFF8A80),),
-                          onPressed: () => _deleteHistory(history.id!),
-                        ),
-                        const SizedBox(width: 5),
-                      ],
-                    ),
-                    Divider(color: Theme.of(context).colorScheme.onSecondary),
-                  ],
-                );
-              },
+                          // ゴミ箱アイコンを右側に配置
+                          IconButton(
+                            icon: Icon(Icons.delete,color: Color(0xFFFF8A80),),
+                            onPressed: () => _deleteHistory(history.id!),
+                          ),
+                          const SizedBox(width: 5),
+                        ],
+                      ),
+                      Divider(color: Theme.of(context).colorScheme.onSecondary),
+                    ],
+                  );
+                },
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-        ],
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }

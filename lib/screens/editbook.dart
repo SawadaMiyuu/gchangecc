@@ -17,6 +17,7 @@ class _EditBookState extends State<EditBook> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
   File? _imageFile; // 選択された画像
+  ScrollController _scrollController = ScrollController(); //初期化時に直接設定
 
   @override
   void initState() {
@@ -24,21 +25,21 @@ class _EditBookState extends State<EditBook> {
     _titleController = TextEditingController(text: widget.kiji.title);
     _contentController = TextEditingController(text: widget.kiji.contents);
     // 既存のサムネイル画像を表示
-    _imageFile =
-        widget.kiji.thumbnail.isNotEmpty ? File(widget.kiji.thumbnail) : null;
+    _imageFile = widget.kiji.thumbnail.isNotEmpty ? File(widget.kiji.thumbnail) : null;
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
+    _scrollController.dispose(); // ScrollControllerを破棄
     super.dispose();
   }
 
   // 画像を選択する関数
   Future<void> _pickImage() async {
     final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
@@ -101,20 +102,19 @@ class _EditBookState extends State<EditBook> {
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),
               ),
+
               const SizedBox(height: 16),
               ScrollbarTheme(
                 data: ScrollbarThemeData(
-                  thumbColor: WidgetStateProperty.all(Colors.brown[300]),
-                  // スクロールバーの色
-                  trackColor: WidgetStateProperty.all(Colors.brown[100]),
-                  // 背景色
-                  thickness: WidgetStateProperty.all(7.0),
-                  // スクロールバーの太さ
-                  radius: const Radius.circular(10.0), // バーの角を丸く
+                  thumbColor: WidgetStateProperty.all(Colors.brown[300]),// スクロールバーの色
+                  trackColor: WidgetStateProperty.all(Colors.brown[100]),// 背景色
+                  thickness: WidgetStateProperty.all(7.0),// スクロールバーの太さ
                 ),
                 child: Scrollbar(
+                  controller: _scrollController, // ScrollControllerを指定
                   thumbVisibility: true, // スクロールバーを常に表示
                   trackVisibility: true, // 背景を表示
+                  radius: const Radius.circular(10.0), // バーの角を丸く
                   child: TextField(
                     controller: _contentController,
                     decoration: const InputDecoration(labelText: '内容'),
@@ -132,17 +132,26 @@ class _EditBookState extends State<EditBook> {
               _imageFile == null
                   ? Image.asset('assets/butter.png', height: 150)
                   : _imageFile!.path.startsWith('/data/user') // ファイルパスかどうかを判定
-                      ? Image.file(_imageFile!,
-                          height: 150) // ファイルパスならImage.fileを使用
-                      : Image.asset(_imageFile!.path, height: 150),
+                  ? Image.file(_imageFile!,
+                  height: 150) // ファイルパスならImage.fileを使用
+                  : Image.asset(_imageFile!.path, height: 150),
               // アセットならImage.assetを使用
 
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               ElevatedButton.icon(
                 onPressed: _pickImage,
-                icon: const Icon(Icons.image),
-                label: const Text('画像を選択'),
+                icon: Icon(
+                  Icons.image,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+                label: Text(
+                  '画像を選択',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                  ),
+                ),
               ),
+
 
               const SizedBox(height: 20),
               ElevatedButton(

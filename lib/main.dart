@@ -15,7 +15,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false,
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'g→cc変換',
       theme: ThemeData(
         colorScheme: const ColorScheme(
@@ -51,6 +52,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int selectedIndex = 0;
+  final GlobalKey<BookState> _bookKey = GlobalKey<BookState>(); // 🔥 Bookの状態を管理するキー
 
   @override
   void initState() {
@@ -62,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
     List<Widget> pages = [
       Measure(),
       SavedItems(),
-      Book(), // Bookに記事リストを渡す
+      Book(key: _bookKey), // Bookに記事リストを渡す
     ];
     // 各ページのタイトルを定義
     List<String> titles = [
@@ -77,8 +79,8 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Center(child: Text(titles[selectedIndex],
           style: TextStyle(
-          fontWeight: FontWeight.bold,
-        ),)), // 現在のページに応じたタイトルを設定
+            fontWeight: FontWeight.bold,
+          ),)), // 現在のページに応じたタイトルを設定
       ),
       body: pages[selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -115,6 +117,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
           if (newKiji != null && newKiji is Kiji) {
             print('mainで受け取ったnewkiji :${newKiji.id}, Title: ${newKiji.title}');
+            _bookKey.currentState?.fetchKijis(); // ✅ Book のデータを更新
           }
         },
         child: const Icon(Icons.add),
